@@ -69,3 +69,10 @@ Asegúrate de que tus contribuciones se alineen con el estilo de codificación y
 
 ## Licencia
 Este proyecto se distribuye bajo la [Licencia MIT](LICENSE). Siéntete libre de utilizar, modificar y distribuir el código según los términos de la licencia. Asegúrate de incluir el archivo de licencia original en cualquier distribución.
+
+# Instrucciones
+
+- TOOL_UP: levantar herramienta. Uso: `TOOL_UP`.
+- TOOL_DOWN: asentar herramiento. Uso: `TOOL_DOWN`.
+- MOVE_TO: mover a coordenadas. Uso: `MOVE_TO 23 40`.
+- CHANGE_COLOR: cambiar color. Uso: `CHANGE_COLOR RED`. Opciones de color: `RED`, `GREEN`, `BLUE`;
