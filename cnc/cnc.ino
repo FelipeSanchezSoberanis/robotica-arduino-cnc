@@ -12,12 +12,10 @@
 Servo servoPinza;
 Servo servoChange;
 
-const int stepsPerRevolution = 200;
-
 int currentX = 0;
 int currentY = 0;
 int currentZ = 0;
-int instruccion = 0;
+int instruction = 0;
 bool firstTime = true;
 char *token;
 const char s[2] = " ";
@@ -41,24 +39,26 @@ void setup() {
   servoChange.write(0);
 }
 
+void setInstruction(String input) {
+  if (strstr(input.c_str(), "TOOL_UP")) {
+    instruction = 0;
+  } else if (strstr(input.c_str(), "TOOL_DOWN")) {
+    instruction = 1;
+  } else if (strstr(input.c_str(), "MOVE_TO")) {
+    instruction = 2;
+  } else if (strstr(input.c_str(), "CHANGE_COLOR")) {
+    instruction = 3;
+  }
+}
+
 void loop() {
   if (Serial.available() <= 0) return;
 
   String input = Serial.readStringUntil('\n');
 
-  // char* pinput = input.toCharArray();
+  setInstruction(input);
 
-  if (strstr(input.c_str(), "TOOL_UP")) {
-    instruccion = 0;
-  } else if (strstr(input.c_str(), "TOOL_DOWN")) {
-    instruccion = 1;
-  } else if (strstr(input.c_str(), "MOVE_TO")) {
-    instruccion = 2;
-  } else if (strstr(input.c_str(), "CHANGE_COLOR")) {
-    instruccion = 3;
-  }
-
-  switch (instruccion) {
+  switch (instruction) {
     case 0:  // TOOL_UP
       toolUp();
       break;
@@ -84,8 +84,6 @@ void loop() {
 
     case 3:  // CHANGE_COLOR
       if (strstr(input.c_str(), "RED")) {
-        Serial.println("rojo");
-
         returnHome();
         delay(500);
         if (firstTime == true) {
@@ -96,8 +94,6 @@ void loop() {
         changeColor(0);
 
       } else if (strstr(input.c_str(), "GREEN")) {
-        Serial.println("verde");
-
         returnHome();
         delay(500);
         if (firstTime == true) {
@@ -108,8 +104,6 @@ void loop() {
         changeColor(1);
 
       } else if (strstr(input.c_str(), "BLUE")) {
-        Serial.println("azul");
-
         returnHome();
         delay(500);
 
@@ -248,9 +242,6 @@ void moveMotor() {
 
   moveStepper(motor1_stepPin, motor1_dirPin, deltaX);
   moveStepper(motor2_stepPin, motor2_dirPin, deltaY);
-
-  Serial.println(deltaX);
-  Serial.println(deltaY);
 
   currentX = targetX;
   currentY = targetY;
