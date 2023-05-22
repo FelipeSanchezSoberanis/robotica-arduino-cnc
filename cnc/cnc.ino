@@ -41,7 +41,13 @@ void setup() {
   servoChange.write(0);
 }
 
-void get_instruction(String input) {
+void loop() {
+  if (Serial.available() <= 0) return;
+
+  String input = Serial.readStringUntil('\n');
+
+  // char* pinput = input.toCharArray();
+
   if (strstr(input.c_str(), "TOOL_UP")) {
     instruccion = 0;
   } else if (strstr(input.c_str(), "TOOL_DOWN")) {
@@ -51,14 +57,6 @@ void get_instruction(String input) {
   } else if (strstr(input.c_str(), "CHANGE_COLOR")) {
     instruccion = 3;
   }
-}
-
-void loop() {
-  if (Serial.available() <= 0) return;
-
-  String input = Serial.readStringUntil('\n');
-
-  get_instruction(input);
 
   switch (instruccion) {
     case 0:  // TOOL_UP
@@ -86,6 +84,8 @@ void loop() {
 
     case 3:  // CHANGE_COLOR
       if (strstr(input.c_str(), "RED")) {
+        Serial.println("rojo");
+
         returnHome();
         delay(500);
         if (firstTime == true) {
@@ -96,6 +96,8 @@ void loop() {
         changeColor(0);
 
       } else if (strstr(input.c_str(), "GREEN")) {
+        Serial.println("verde");
+
         returnHome();
         delay(500);
         if (firstTime == true) {
@@ -104,9 +106,13 @@ void loop() {
         toolDown();
         delay(500);
         changeColor(1);
+
       } else if (strstr(input.c_str(), "BLUE")) {
+        Serial.println("azul");
+
         returnHome();
         delay(500);
+
         toolDown();
         delay(500);
         changeColor(2);
