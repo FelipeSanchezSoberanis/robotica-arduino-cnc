@@ -15,8 +15,8 @@ class MachineState {
     x = 0;
     y = 0;
     toolIsUp = true;
-    hasMarker = false;
-    clawIsOpen = true;
+    hasMarker = true;
+    clawIsOpen = false;
   }
   int x;
   int y;
@@ -55,6 +55,8 @@ void setup() {
   servoChange.attach(10);
 
   servoChange.write(0);
+
+  openPinza();
 }
 
 void setInstruction(String input) {
@@ -94,7 +96,7 @@ void parseCoords(String input) {
 void openPinza() {
   if (state.clawIsOpen) return;
 
-  servoPinza.write(60);
+  servoPinza.write(55);
   state.hasMarker = false;
   state.clawIsOpen = true;
 }
