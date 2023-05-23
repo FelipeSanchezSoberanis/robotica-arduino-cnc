@@ -122,7 +122,7 @@ void loop() {
         delay(500);
         state.hasMarker = false;
         state.clawIsOpen = true;
-        x = "500";
+        x = "2500";
         y = "0";
         moveMotor();
         delay(500);
@@ -205,7 +205,7 @@ void changeColor(int color) {
 void toolDown() {
   digitalWrite(motor3_dirPin, HIGH);
 
-  for (int i = 0; i < 1050; i++) {
+  for (int i = 0; i < 1125; i++) {
     digitalWrite(motor3_stepPin, HIGH);
     delay(1);
     digitalWrite(motor3_stepPin, LOW);
@@ -218,7 +218,7 @@ void toolDown() {
 void toolUp() {
   digitalWrite(motor3_dirPin, LOW);
 
-  for (int i = 0; i < 1050; i++) {
+  for (int i = 0; i < 1125; i++) {
     digitalWrite(motor3_stepPin, HIGH);
     delay(1);
     digitalWrite(motor3_stepPin, LOW);
