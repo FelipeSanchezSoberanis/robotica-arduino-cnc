@@ -9,6 +9,22 @@
 
 #include <Servo.h>
 
+class MachineState {
+ public:
+  MachineState() {
+    x = 0;
+    y = 0;
+    toolIsUp = true;
+    hasMarker = false;
+    clawIsOpen = true;
+  }
+  int x;
+  int y;
+  bool toolIsUp;
+  bool hasMarker;
+  bool clawIsOpen;
+};
+
 Servo servoPinza;
 Servo servoChange;
 
@@ -22,6 +38,8 @@ const char s[2] = " ";
 char *x;
 char *y;
 int count = 0;
+
+MachineState state;
 
 void setup() {
   Serial.begin(9600);
@@ -94,11 +112,40 @@ void loop() {
       break;
 
     case 3:  // CHANGE_COLOR
-      returnHome();
-      delay(50);
-      if (firstTime) servoPinza.write(80);
-      toolDown();
-      delay(500);
+      if (state.hasMarker) {
+        if (!state.toolIsUp) toolUp();
+        returnHome();
+        delay(500);
+        toolDown();
+        delay(500);
+        servoPinza.write(60);
+        delay(500);
+        state.hasMarker = false;
+        state.clawIsOpen = true;
+        x = "500";
+        y = "0";
+        moveMotor();
+        delay(500);
+      } else {
+        if (!state.toolIsUp) toolUp();
+        x = "500";
+        y = "0";
+        moveMotor();
+        delay(500);
+        toolDown();
+        delay(500);
+        x = "0";
+        y = "0";
+        moveMotor();
+        delay(500);
+        servoPinza.write(0);
+        delay(500);
+        state.hasMarker = true;
+        state.clawIsOpen = false;
+        toolUp();
+        delay(500);
+        break;
+      }
 
       if (strstr(input.c_str(), "RED")) {
         Serial.print("Color: ");
@@ -117,6 +164,14 @@ void loop() {
         changeColor(2);
       }
 
+      delay(500);
+      returnHome();
+      delay(500);
+      servoPinza.write(0);
+      state.hasMarker = true;
+      state.clawIsOpen = false;
+      delay(1000);
+      toolUp();
       break;
     default:
       break;
@@ -126,19 +181,15 @@ void loop() {
 }
 
 void returnHome() {
-  if (!firstTime) toolUp();
   x = 0;
   y = 0;
   moveMotor();
 }
 
 void changeColor(int color) {
-  servoPinza.write(60);
-  delay(500);
-  if (!firstTime) {
-    toolUp();
-    delay(50);
-  }
+  // servoPinza.write(60);
+  // delay(500);
+  // if (!state.toolIsUp) toolUp();
 
   switch (color) {
     case 0:
@@ -154,16 +205,19 @@ void changeColor(int color) {
       break;
   }
 
-  delay(50);
-  if (!firstTime) {
-    toolDown();
-    delay(50);
-  }
-  servoPinza.write(0);
-  delay(500);
-  toolUp();
+  // delay(50);
+  // if (!firstTime) {
+  //   toolDown();
+  //   // delay(50);
+  // }
+  // x = "0";
+  // y = "0";
+  // moveMotor();
+  // servoPinza.write(0);
+  // delay(500);
+  // toolUp();
 
-  firstTime = false;
+  // firstTime = false;
 }
 
 void toolDown() {
@@ -175,6 +229,8 @@ void toolDown() {
     digitalWrite(motor3_stepPin, LOW);
     delay(1);
   }
+
+  state.toolIsUp = false;
 }
 
 void toolUp() {
@@ -186,6 +242,8 @@ void toolUp() {
     digitalWrite(motor3_stepPin, LOW);
     delay(1);
   }
+
+  state.toolIsUp = true;
 }
 
 void moveMotor() {
@@ -197,14 +255,17 @@ void moveMotor() {
   Serial.print("y: ");
   Serial.println(targetY);
 
-  int deltaX = targetX - currentX;
-  int deltaY = targetY - currentY;
+  int deltaX = targetX - state.x;
+  int deltaY = targetY - state.y;
 
   moveStepper(motor1_stepPin, motor1_dirPin, deltaX);
   moveStepper(motor2_stepPin, motor2_dirPin, deltaY);
 
-  currentX = targetX;
-  currentY = targetY;
+  // currentX = targetX;
+  // currentY = targetY;
+
+  state.x = targetX;
+  state.y = targetY;
 }
 
 void moveStepper(int stepPin, int dirPin, int steps) {
