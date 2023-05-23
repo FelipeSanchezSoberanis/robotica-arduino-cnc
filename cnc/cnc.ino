@@ -77,7 +77,34 @@ void setInstruction(String input) {
   }
 }
 
-void parseCoords(String input, char *x, char *y) {}
+void parseCoords(String input) {
+  count = 0;
+  token = strtok(input.c_str(), s);
+  while (token != NULL) {
+    token = strtok(NULL, s);
+    count++;
+    if (count == 1) {
+      x = token;
+    } else if (count == 2) {
+      y = token;
+    }
+  }
+}
+
+void openPinza() {
+  if (state.clawIsOpen) return;
+
+  servoPinza.write(60);
+  state.hasMarker = false;
+  state.clawIsOpen = true;
+}
+void closePinza() {
+  if (!state.clawIsOpen) return;
+
+  servoPinza.write(0);
+  state.hasMarker = true;
+  state.clawIsOpen = false;
+}
 
 void loop() {
   if (Serial.available() <= 0) return;
@@ -96,82 +123,51 @@ void loop() {
       break;
 
     case 2:  // MOVE_TO
-      count = 0;
-      token = strtok(input.c_str(), s);
-      while (token != NULL) {
-        token = strtok(NULL, s);
-        count++;
-        if (count == 1) {
-          x = token;
-        } else if (count == 2) {
-          y = token;
-        }
-      }
-
+      parseCoords(input);
       moveMotor();
       break;
 
     case 3:  // CHANGE_COLOR
-      if (state.hasMarker) {
-        if (!state.toolIsUp) toolUp();
-        returnHome();
+      if (!state.hasMarker) {
+        toolUp();
         delay(500);
+        moveTo("2500", "0");
+        delay(500);
+
+        setColor(input);
+        delay(500);
+
         toolDown();
         delay(500);
-        servoPinza.write(60);
+        moveTo("0", "0");
         delay(500);
-        state.hasMarker = false;
-        state.clawIsOpen = true;
-        x = "2500";
-        y = "0";
-        moveMotor();
+        closePinza();
         delay(500);
-      } else {
-        if (!state.toolIsUp) toolUp();
-        x = "500";
-        y = "0";
-        moveMotor();
-        delay(500);
-        toolDown();
-        delay(500);
-        x = "0";
-        y = "0";
-        moveMotor();
-        delay(500);
-        servoPinza.write(0);
-        delay(500);
-        state.hasMarker = true;
-        state.clawIsOpen = false;
         toolUp();
         delay(500);
         break;
       }
 
-      if (strstr(input.c_str(), "RED")) {
-        Serial.print("Color: ");
-        Serial.println("RED");
-
-        changeColor(0);
-      } else if (strstr(input.c_str(), "GREEN")) {
-        Serial.print("Color: ");
-        Serial.println("GREEN");
-
-        changeColor(1);
-      } else if (strstr(input.c_str(), "BLUE")) {
-        Serial.print("Color: ");
-        Serial.println("BLUE");
-
-        changeColor(2);
-      }
-
+      toolUp();
       delay(500);
       returnHome();
       delay(500);
-      servoPinza.write(0);
-      state.hasMarker = true;
-      state.clawIsOpen = false;
-      delay(1000);
+      toolDown();
+      delay(500);
+      openPinza();
+      delay(500);
+      moveTo("2500", "0");
+      delay(500);
+
+      setColor(input);
+      delay(500);
+
+      returnHome();
+      delay(500);
+      closePinza();
+      delay(500);
       toolUp();
+      delay(500);
       break;
     default:
       break;
@@ -180,10 +176,35 @@ void loop() {
   Serial.println("DONE");
 }
 
+void moveTo(char *xCoord, char *yCoord) {
+  x = xCoord;
+  y = yCoord;
+  moveMotor();
+}
+
 void returnHome() {
   x = 0;
   y = 0;
   moveMotor();
+}
+
+void setColor(String input) {
+  if (strstr(input.c_str(), "RED")) {
+    Serial.print("Color: ");
+    Serial.println("RED");
+
+    changeColor(0);
+  } else if (strstr(input.c_str(), "GREEN")) {
+    Serial.print("Color: ");
+    Serial.println("GREEN");
+
+    changeColor(1);
+  } else if (strstr(input.c_str(), "BLUE")) {
+    Serial.print("Color: ");
+    Serial.println("BLUE");
+
+    changeColor(2);
+  }
 }
 
 void changeColor(int color) {
@@ -203,6 +224,8 @@ void changeColor(int color) {
 }
 
 void toolDown() {
+  if (!state.toolIsUp) return;
+
   digitalWrite(motor3_dirPin, HIGH);
 
   for (int i = 0; i < 1125; i++) {
@@ -216,6 +239,8 @@ void toolDown() {
 }
 
 void toolUp() {
+  if (state.toolIsUp) return;
+
   digitalWrite(motor3_dirPin, LOW);
 
   for (int i = 0; i < 1125; i++) {
