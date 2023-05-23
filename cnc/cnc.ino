@@ -187,10 +187,6 @@ void returnHome() {
 }
 
 void changeColor(int color) {
-  // servoPinza.write(60);
-  // delay(500);
-  // if (!state.toolIsUp) toolUp();
-
   switch (color) {
     case 0:
       servoChange.write(0);
@@ -204,20 +200,6 @@ void changeColor(int color) {
     default:
       break;
   }
-
-  // delay(50);
-  // if (!firstTime) {
-  //   toolDown();
-  //   // delay(50);
-  // }
-  // x = "0";
-  // y = "0";
-  // moveMotor();
-  // servoPinza.write(0);
-  // delay(500);
-  // toolUp();
-
-  // firstTime = false;
 }
 
 void toolDown() {
@@ -260,9 +242,6 @@ void moveMotor() {
 
   moveStepper(motor1_stepPin, motor1_dirPin, deltaX);
   moveStepper(motor2_stepPin, motor2_dirPin, deltaY);
-
-  // currentX = targetX;
-  // currentY = targetY;
 
   state.x = targetX;
   state.y = targetY;
