@@ -41,15 +41,25 @@ void setup() {
 
 void setInstruction(String input) {
   if (strstr(input.c_str(), "TOOL_UP")) {
+    Serial.println("Received command: TOOL_UP");
+
     instruction = 0;
   } else if (strstr(input.c_str(), "TOOL_DOWN")) {
+    Serial.println("Received command: TOOL_DOWN");
+
     instruction = 1;
   } else if (strstr(input.c_str(), "MOVE_TO")) {
+    Serial.println("Received command: MOVE_TO");
+
     instruction = 2;
   } else if (strstr(input.c_str(), "CHANGE_COLOR")) {
+    Serial.println("Received command: CHANGE_COLOR");
+
     instruction = 3;
   }
 }
+
+void parseCoords(String input, char *x, char *y) {}
 
 void loop() {
   if (Serial.available() <= 0) return;
@@ -79,134 +89,79 @@ void loop() {
           y = token;
         }
       }
+
       moveMotor();
       break;
 
     case 3:  // CHANGE_COLOR
+      returnHome();
+      delay(50);
+      if (firstTime) servoPinza.write(80);
+      toolDown();
+      delay(500);
+
       if (strstr(input.c_str(), "RED")) {
-        returnHome();
-        delay(500);
-        if (firstTime == true) {
-          servoPinza.write(80);
-        }
-        toolDown();
-        delay(500);
+        Serial.print("Color: ");
+        Serial.println("RED");
+
         changeColor(0);
-
       } else if (strstr(input.c_str(), "GREEN")) {
-        returnHome();
-        delay(500);
-        if (firstTime == true) {
-          servoPinza.write(80);
-        }
-        toolDown();
-        delay(500);
+        Serial.print("Color: ");
+        Serial.println("GREEN");
+
         changeColor(1);
-
       } else if (strstr(input.c_str(), "BLUE")) {
-        returnHome();
-        delay(500);
+        Serial.print("Color: ");
+        Serial.println("BLUE");
 
-        toolDown();
-        delay(500);
         changeColor(2);
       }
-      break;
 
+      break;
     default:
       break;
   }
+
+  Serial.println("DONE");
 }
 
 void returnHome() {
-  if (firstTime == false) {
-    toolUp();
-  }
-
+  if (!firstTime) toolUp();
   x = 0;
   y = 0;
-
   moveMotor();
-
-  if (Serial.available() <= 0) return;
 }
 
 void changeColor(int color) {
+  servoPinza.write(60);
+  delay(500);
+  if (!firstTime) {
+    toolUp();
+    delay(50);
+  }
+
   switch (color) {
     case 0:
-
-      servoPinza.write(80);
-      delay(500);
-
-      if (firstTime == false) {
-        toolUp();
-        delay(500);
-      }
-
       servoChange.write(0);
-      delay(500);
-
-      if (firstTime == false) {
-        toolDown();
-        delay(500);
-      }
-
-      servoPinza.write(0);
-      delay(500);
-      toolUp();
-
       break;
-
     case 1:
-
-      servoPinza.write(80);
-      delay(500);
-
-      if (firstTime == false) {
-        toolUp();
-        delay(500);
-      }
-
       servoChange.write(90);
-      delay(500);
-
-      if (firstTime == false) {
-        toolDown();
-        delay(500);
-      }
-
-      servoPinza.write(0);
-      delay(500);
-      toolUp();
-
       break;
-
     case 2:
-
-      servoPinza.write(80);
-      delay(500);
-
-      if (firstTime == false) {
-        toolUp();
-        delay(500);
-      }
-
       servoChange.write(180);
-      delay(500);
-
-      if (firstTime == false) {
-        toolDown();
-        delay(500);
-      }
-
-      servoPinza.write(0);
-      delay(500);
-      toolUp();
       break;
-
     default:
       break;
   }
+
+  delay(50);
+  if (!firstTime) {
+    toolDown();
+    delay(50);
+  }
+  servoPinza.write(0);
+  delay(500);
+  toolUp();
 
   firstTime = false;
 }
@@ -214,7 +169,7 @@ void changeColor(int color) {
 void toolDown() {
   digitalWrite(motor3_dirPin, HIGH);
 
-  for (int i = 0; i < 950; i++) {
+  for (int i = 0; i < 1050; i++) {
     digitalWrite(motor3_stepPin, HIGH);
     delay(1);
     digitalWrite(motor3_stepPin, LOW);
@@ -225,7 +180,7 @@ void toolDown() {
 void toolUp() {
   digitalWrite(motor3_dirPin, LOW);
 
-  for (int i = 0; i < 950; i++) {
+  for (int i = 0; i < 1050; i++) {
     digitalWrite(motor3_stepPin, HIGH);
     delay(1);
     digitalWrite(motor3_stepPin, LOW);
@@ -236,6 +191,11 @@ void toolUp() {
 void moveMotor() {
   int targetX = atoi(x);
   int targetY = atoi(y);
+
+  Serial.print("x: ");
+  Serial.println(targetX);
+  Serial.print("y: ");
+  Serial.println(targetY);
 
   int deltaX = targetX - currentX;
   int deltaY = targetY - currentY;
