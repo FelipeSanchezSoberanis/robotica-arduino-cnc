@@ -60,7 +60,11 @@ void setup() {
 }
 
 void setInstruction(String input) {
-  if (strstr(input.c_str(), "TOOL_UP")) {
+  if (input.startsWith("OPEN_CLAW")) {
+    openPinza();
+  } else if (input.startsWith("CLOSE_CLAW")) {
+    closePinza();
+  } else if (strstr(input.c_str(), "TOOL_UP")) {
     Serial.println("Received command: TOOL_UP");
 
     instruction = 0;
